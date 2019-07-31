@@ -14,7 +14,7 @@ def memwrpcap(filename, pkt, *args, **kargs):
 
 class MemoryPcapWriter(PcapWriter):
     """A stream PCAP writer with more control than wrpcap()"""
-    def __init__(self, filename, linktype=None, gz=False, endianness="", append=False, sync=False):
+    def __init__(self, filename, linktype=None, gz=False, endianness="", append=False, sync=False, nano=False):
         """
         linktype: force linktype to a given value. If None, linktype is taken
                   from the first writter packet
@@ -24,6 +24,7 @@ class MemoryPcapWriter(PcapWriter):
         sync: do not bufferize writes to the capture file
         """
 
+        self.nano = nano
         self.linktype = linktype
         self.header_present = 0
         self.append=append
@@ -45,4 +46,3 @@ class MemoryPcapWriter(PcapWriter):
         self.flush()
         if isinstance(self.filename, str):
             self.close() # don't close file-like object
-

@@ -1,0 +1,26 @@
+sudo python new-offline2.py ~/Documents/UFRJ/IC/dataset/BinaryBalancedDatasets/Network100KBinaryBalanced.csv ~/Documents/UFRJ/IC/testes
+	
+
+cd ~/Documents/UFRJ/IC/catraca/processing-layer
+spark-submit --master spark://master:7077 new-offline2.py hdfs://master:9000/user/app/Network100KBinaryBalanced.csv ~/Documents/UFRJ/IC/testes
+Nota: Comentar output
+
+cd ~/Downloads/catraca_test/src/main/scala
+spark-submit --master spark://master:7077 --class Catraca --jars catraca_2.11-2.0.jar catraca.scala hdfs://master:9000/user/app/Network100KBinaryBalanced.csv ~/Documents/UFRJ/IC/testes
+Nota: Comentar output
+
+cd ~/Downloads/catraca_test
+sudo sbt "run Network3.67MBinaryBalanced.csv ~/Documents/UFRJ/IC/testes"
+Nota: Teste pelo scb
+
+
+sudo su
+Ctrl+D
+sudo /opt/kafka/kafka_2.12-1.1.0/bin/kafka-server-start.sh /opt/kafka/kafka_2.12-1.1.0/config/server.properties &
+cd ~/Documents/UFRJ/IC/catraca
+sudo ./start-everything.sh
+cd ~/Documents/UFRJ/IC/catraca/capture-layer
+sudo python read-network-flowtbag-fromInterface.py
+cd /opt/spark/jars
+spark-submit --master spark://master:7077 --jars elasticsearch-spark-20_2.10-5.5.1.jar,spark-streaming-kafka-0-8-assembly_2.11-2.1.1.jar ~/Documents/UFRJ/IC/catraca/processing-layer/detection-with-elastic.py hdfs://master:9000/user/app/dataset master:9092 testing
+Nota: WIP - Iniciar Kafka manualmente; limitar captura somente para características definidas

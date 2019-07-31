@@ -23,10 +23,10 @@ from kafka.errors import KafkaError
 WINDOW = 2.0
 CLASS = 'live'
 TEST_FILE = 'testFlowtbag.txt'
-IFACE = 'ens3' #IFACE = 'eth0' #None = All
-TOPIC = 'test2'.encode('utf-8')# + str(contadorTopicos)
+IFACE = 'wlp2s0' #IFACE = 'eth0' #None = All
+TOPIC = 'testing'.encode('utf-8')# + str(contadorTopicos)
 ENCAPSULATION = None #GRE #NSH
-producer = KafkaProducer(bootstrap_servers=['10.240.180.33:9092'])
+producer = KafkaProducer(bootstrap_servers=['master:9092'])
 #PRODUCER = KafkaProducer(bootstrap_servers=['10.10.10.3:9092'])
 
 ############
@@ -51,6 +51,8 @@ def noNSH(pkt):
 def salvar_fluxosKafka(flows, classe, topico, producer):
     for flow in flows.active_flows.values():
         msg = str(flow) + ',' + classe
+
+        print(msg)
         producer.send(topico, json.dumps(msg).encode('utf-8'))
 
 #Send to Disk

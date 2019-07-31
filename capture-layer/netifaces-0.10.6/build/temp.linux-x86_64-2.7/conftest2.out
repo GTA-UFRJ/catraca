@@ -1,0 +1,5 @@
+x86_64-linux-gnu-gcc -pthread -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fno-strict-aliasing -Wdate-time -D_FORTIFY_SOURCE=2 -g -fstack-protector-strong -Wformat -Werror=format-security -fPIC -DHAVE_GETIFADDRS=1 -I/usr/include/python2.7 -c build/temp.linux-x86_64-2.7/conftest-1.c -o build/temp.linux-x86_64-2.7/build/temp.linux-x86_64-2.7/conftest-1.o
+build/temp.linux-x86_64-2.7/conftest-1.c: In function ‘main’:
+build/temp.linux-x86_64-2.7/conftest-1.c:10:19: warning: variable ‘ret’ set but not used [-Wunused-but-set-variable]
+               int ret;
+                   ^

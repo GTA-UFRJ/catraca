@@ -1,0 +1,62 @@
+###### Testes Offline Direto ######
+
+sudo python new-offline2.py ~/Documents/UFRJ/IC/dataset/BinaryBalancedDatasets/Network100KBinaryBalanced.csv ~/Documents/UFRJ/IC/testes
+
+cd ~/Downloads/catraca_test
+sudo sbt "run Network3.67MBinaryBalanced.csv ~/Documents/UFRJ/IC/testes"
+Nota: Teste pelo scb
+
+
+
+
+
+
+###### Testes Offline Spark-Submit ######
+
+cd ~/Documents/UFRJ/IC/catraca/processing-layer
+spark-submit --master spark://chagas-desktop:7077 new-offline.py hdfs://chagas-desktop:9000/user/app/Network10KBinaryBalanced.csv
+
+cd ~/Documents/UFRJ/IC/catraca/processing-layer
+spark-submit --master spark://chagas-desktop:7077 new-offline2.py hdfs://chagas-desktop:9000/user/app/Network10KBinaryBalanced.csv hdfs://chagas-desktop:9000/user/testes
+
+cd ~/Documents/UFRJ/IC/catraca_scala/src/main/scala
+spark-submit --master spark://chagas-desktop:7077 --class Catraca --jars catraca_2.11-2.0.jar catraca.scala hdfs://chagas-desktop:9000/user/app/Network100KBinaryBalanced.csv hdfs://chagas-desktop:9000/user/testes
+
+
+
+### DECISION TREE ##
+
+cd ~/Documents/UFRJ/IC/catraca/processing-layer
+spark-submit --master spark://chagas-desktop:7077 decisiontree.py hdfs://chagas-desktop:9000/user/app/Network100KBinaryBalancedNew.csv hdfs://chagas-desktop:9000/user/testes
+
+### MULTILAYER PERCEPTRON ###
+
+cd ~/Documents/UFRJ/IC/catraca/processing-layer
+spark-submit --master spark://chagas-desktop:7077 neuralnetwork.py hdfs://chagas-desktop:9000/user/app/Network100KBinaryBalancedNew.csv hdfs://chagas-desktop:9000/user/testes hdfs://chagas-desktop:9000/user/app/Network10KBinaryBalancedNew.csv
+
+### NAIVE BAYES ###
+
+cd ~/Documents/UFRJ/IC/catraca/processing-layer
+spark-submit --master spark://chagas-desktop:7077 naivebayes.py hdfs://chagas-desktop:9000/user/app/Network10KBinaryBalanced.csv hdfs://chagas-desktop:9000/user/testes
+
+
+
+
+
+
+
+
+
+
+###### Teste Online ######
+
+sudo su
+Ctrl+D
+sudo /opt/kafka/kafka_2.12-1.1.0/bin/kafka-server-start.sh /opt/kafka/kafka_2.12-1.1.0/config/server.properties &
+cd ~/Documents/UFRJ/IC/catraca
+sudo ./start-everything.sh
+cd ~/Documents/UFRJ/IC/catraca/capture-layer
+sudo python read-network-flowtbag-fromInterface.py
+cd /opt/spark/jars
+spark-submit --master spark://chagas-desktop:7077 --jars elasticsearch-spark-20_2.10-5.5.1.jar,spark-streaming-kafka-0-8-assembly_2.11-2.1.1.jar ~/Documents/UFRJ/IC/catraca/processing-layer/detection-with-elastic.py hdfs://chagas-desktop:9000/user/app/dataset chagas-desktop:9092 testing
+Nota: WIP - Iniciar Kafka manualmente; limitar captura somente para características definidas

@@ -1,0 +1,60 @@
+x86_64-linux-gnu-gcc -pthread -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fno-strict-aliasing -Wdate-time -D_FORTIFY_SOURCE=2 -g -fstack-protector-strong -Wformat -Werror=format-security -fPIC -DHAVE_GETIFADDRS=1 -DHAVE_GETNAMEINFO=1 -I/usr/include/python2.7 -c build/temp.linux-x86_64-2.7/conftest-2.c -o build/temp.linux-x86_64-2.7/build/temp.linux-x86_64-2.7/conftest-2.o
+build/temp.linux-x86_64-2.7/conftest-2.c:7:48: fatal error: netinet/in_var.h: No such file or directory
+compilation terminated.
+x86_64-linux-gnu-gcc -pthread -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fno-strict-aliasing -Wdate-time -D_FORTIFY_SOURCE=2 -g -fstack-protector-strong -Wformat -Werror=format-security -fPIC -DHAVE_GETIFADDRS=1 -DHAVE_GETNAMEINFO=1 -I/usr/include/python2.7 -c build/temp.linux-x86_64-2.7/conftest-3.c -o build/temp.linux-x86_64-2.7/build/temp.linux-x86_64-2.7/conftest-3.o
+build/temp.linux-x86_64-2.7/conftest-3.c:5:39: fatal error: net/if_dl.h: No such file or directory
+compilation terminated.
+x86_64-linux-gnu-gcc -pthread -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fno-strict-aliasing -Wdate-time -D_FORTIFY_SOURCE=2 -g -fstack-protector-strong -Wformat -Werror=format-security -fPIC -DHAVE_GETIFADDRS=1 -DHAVE_GETNAMEINFO=1 -I/usr/include/python2.7 -c build/temp.linux-x86_64-2.7/conftest-4.c -o build/temp.linux-x86_64-2.7/build/temp.linux-x86_64-2.7/conftest-4.o
+x86_64-linux-gnu-gcc -pthread -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fno-strict-aliasing -Wdate-time -D_FORTIFY_SOURCE=2 -g -fstack-protector-strong -Wformat -Werror=format-security -fPIC -DHAVE_GETIFADDRS=1 -DHAVE_GETNAMEINFO=1 -I/usr/include/python2.7 -c build/temp.linux-x86_64-2.7/conftest-5.c -o build/temp.linux-x86_64-2.7/build/temp.linux-x86_64-2.7/conftest-5.o
+x86_64-linux-gnu-gcc -pthread -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fno-strict-aliasing -Wdate-time -D_FORTIFY_SOURCE=2 -g -fstack-protector-strong -Wformat -Werror=format-security -fPIC -DHAVE_GETIFADDRS=1 -DHAVE_GETNAMEINFO=1 -I/usr/include/python2.7 -c build/temp.linux-x86_64-2.7/conftest-6.c -o build/temp.linux-x86_64-2.7/build/temp.linux-x86_64-2.7/conftest-6.o
+x86_64-linux-gnu-gcc -pthread -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fno-strict-aliasing -Wdate-time -D_FORTIFY_SOURCE=2 -g -fstack-protector-strong -Wformat -Werror=format-security -fPIC -DHAVE_GETIFADDRS=1 -DHAVE_GETNAMEINFO=1 -I/usr/include/python2.7 -c build/temp.linux-x86_64-2.7/conftest-7.c -o build/temp.linux-x86_64-2.7/build/temp.linux-x86_64-2.7/conftest-7.o
+x86_64-linux-gnu-gcc -pthread -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fno-strict-aliasing -Wdate-time -D_FORTIFY_SOURCE=2 -g -fstack-protector-strong -Wformat -Werror=format-security -fPIC -DHAVE_GETIFADDRS=1 -DHAVE_GETNAMEINFO=1 -I/usr/include/python2.7 -c build/temp.linux-x86_64-2.7/conftest-8.c -o build/temp.linux-x86_64-2.7/build/temp.linux-x86_64-2.7/conftest-8.o
+x86_64-linux-gnu-gcc -pthread -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fno-strict-aliasing -Wdate-time -D_FORTIFY_SOURCE=2 -g -fstack-protector-strong -Wformat -Werror=format-security -fPIC -DHAVE_GETIFADDRS=1 -DHAVE_GETNAMEINFO=1 -I/usr/include/python2.7 -c build/temp.linux-x86_64-2.7/conftest-9.c -o build/temp.linux-x86_64-2.7/build/temp.linux-x86_64-2.7/conftest-9.o
+x86_64-linux-gnu-gcc -pthread -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fno-strict-aliasing -Wdate-time -D_FORTIFY_SOURCE=2 -g -fstack-protector-strong -Wformat -Werror=format-security -fPIC -DHAVE_GETIFADDRS=1 -DHAVE_GETNAMEINFO=1 -I/usr/include/python2.7 -c build/temp.linux-x86_64-2.7/conftest-10.c -o build/temp.linux-x86_64-2.7/build/temp.linux-x86_64-2.7/conftest-10.o
+In file included from build/temp.linux-x86_64-2.7/conftest-10.c:5:0:
+/usr/include/netrose/rose.h:73:3: error: unknown type name ‘ax25_address’
+   ax25_address srose_call;
+   ^
+/usr/include/netrose/rose.h:75:3: error: unknown type name ‘ax25_address’
+   ax25_address srose_digi;
+   ^
+/usr/include/netrose/rose.h:82:3: error: unknown type name ‘ax25_address’
+   ax25_address srose_call;
+   ^
+/usr/include/netrose/rose.h:84:3: error: unknown type name ‘ax25_address’
+   ax25_address srose_digis[ROSE_MAX_DIGIS];
+   ^
+/usr/include/netrose/rose.h:91:3: error: unknown type name ‘ax25_address’
+   ax25_address neighbour;
+   ^
+/usr/include/netrose/rose.h:94:3: error: unknown type name ‘ax25_address’
+   ax25_address digipeaters[AX25_MAX_DIGIS];
+   ^
+/usr/include/netrose/rose.h:94:28: error: ‘AX25_MAX_DIGIS’ undeclared here (not in a function)
+   ax25_address digipeaters[AX25_MAX_DIGIS];
+                            ^
+/usr/include/netrose/rose.h:106:3: error: unknown type name ‘ax25_address’
+   ax25_address source_call,   dest_call;
+   ^
+/usr/include/netrose/rose.h:108:3: error: unknown type name ‘ax25_address’
+   ax25_address source_digis[ROSE_MAX_DIGIS];
+   ^
+/usr/include/netrose/rose.h:109:3: error: unknown type name ‘ax25_address’
+   ax25_address dest_digis[ROSE_MAX_DIGIS];
+   ^
+/usr/include/netrose/rose.h:112:3: error: unknown type name ‘ax25_address’
+   ax25_address fail_call;
+   ^
+x86_64-linux-gnu-gcc -pthread -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fno-strict-aliasing -Wdate-time -D_FORTIFY_SOURCE=2 -g -fstack-protector-strong -Wformat -Werror=format-security -fPIC -DHAVE_GETIFADDRS=1 -DHAVE_GETNAMEINFO=1 -I/usr/include/python2.7 -c build/temp.linux-x86_64-2.7/conftest-11.c -o build/temp.linux-x86_64-2.7/build/temp.linux-x86_64-2.7/conftest-11.o
+x86_64-linux-gnu-gcc -pthread -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fno-strict-aliasing -Wdate-time -D_FORTIFY_SOURCE=2 -g -fstack-protector-strong -Wformat -Werror=format-security -fPIC -DHAVE_GETIFADDRS=1 -DHAVE_GETNAMEINFO=1 -I/usr/include/python2.7 -c build/temp.linux-x86_64-2.7/conftest-12.c -o build/temp.linux-x86_64-2.7/build/temp.linux-x86_64-2.7/conftest-12.o
+x86_64-linux-gnu-gcc -pthread -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fno-strict-aliasing -Wdate-time -D_FORTIFY_SOURCE=2 -g -fstack-protector-strong -Wformat -Werror=format-security -fPIC -DHAVE_GETIFADDRS=1 -DHAVE_GETNAMEINFO=1 -I/usr/include/python2.7 -c build/temp.linux-x86_64-2.7/conftest-13.c -o build/temp.linux-x86_64-2.7/build/temp.linux-x86_64-2.7/conftest-13.o
+x86_64-linux-gnu-gcc -pthread -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fno-strict-aliasing -Wdate-time -D_FORTIFY_SOURCE=2 -g -fstack-protector-strong -Wformat -Werror=format-security -fPIC -DHAVE_GETIFADDRS=1 -DHAVE_GETNAMEINFO=1 -I/usr/include/python2.7 -c build/temp.linux-x86_64-2.7/conftest-14.c -o build/temp.linux-x86_64-2.7/build/temp.linux-x86_64-2.7/conftest-14.o
+x86_64-linux-gnu-gcc -pthread -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fno-strict-aliasing -Wdate-time -D_FORTIFY_SOURCE=2 -g -fstack-protector-strong -Wformat -Werror=format-security -fPIC -DHAVE_GETIFADDRS=1 -DHAVE_GETNAMEINFO=1 -I/usr/include/python2.7 -c build/temp.linux-x86_64-2.7/conftest-15.c -o build/temp.linux-x86_64-2.7/build/temp.linux-x86_64-2.7/conftest-15.o
+x86_64-linux-gnu-gcc -pthread -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fno-strict-aliasing -Wdate-time -D_FORTIFY_SOURCE=2 -g -fstack-protector-strong -Wformat -Werror=format-security -fPIC -DHAVE_GETIFADDRS=1 -DHAVE_GETNAMEINFO=1 -DHAVE_NETASH_ASH_H=1 -DHAVE_NETATALK_AT_H=1 -DHAVE_NETAX25_AX25_H=1 -DHAVE_NETECONET_EC_H=1 -DHAVE_NETIPX_IPX_H=1 -DHAVE_NETPACKET_PACKET_H=1 -DHAVE_LINUX_IRDA_H=1 -DHAVE_LINUX_ATM_H=1 -DHAVE_LINUX_LLC_H=1 -DHAVE_LINUX_TIPC_H=1 -DHAVE_LINUX_DN_H=1 -I/usr/include/python2.7 -c build/temp.linux-x86_64-2.7/conftest-16.c -o build/temp.linux-x86_64-2.7/build/temp.linux-x86_64-2.7/conftest-16.o
+build/temp.linux-x86_64-2.7/conftest-16.c: In function ‘main’:
+build/temp.linux-x86_64-2.7/conftest-16.c:8:17: error: ‘struct sockaddr’ has no member named ‘sa_len’
+               sa.sa_len = 5;
+                 ^
+build/temp.linux-x86_64-2.7/conftest-16.c:7:31: warning: variable ‘sa’ set but not used [-Wunused-but-set-variable]
+               struct sockaddr sa;
+                               ^

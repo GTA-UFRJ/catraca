@@ -22,10 +22,8 @@ import logging
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 
 from scapy.all import *
-from read_tcpdump import *
+from read_tcpdump2 import *
 from mempcap import memwrpcap
-
-
 
 ###Config###
 
@@ -77,7 +75,7 @@ def write_flows():#
 			fluxos = atualizar_fluxos(eth, fluxos, tempo_inicio, WINDOW)
 			contador += 1
 			if len(lista_fluxos) > 100:
-				salvar_fluxos(TEST_FILE,lista_fluxos, CHARACTERISTICS,CLASS)
+				salvar_fluxos(TEST_FILE, lista_fluxos, CHARACTERISTICS, CLASS)
 				lista_fluxos = []
 				# print ts, len(data)
 				# print 'Timestamp: ', str(datetime.datetime.utcfromtimestamp(ts))
@@ -86,17 +84,9 @@ def write_flows():#
 		salvar_fluxos(TEST_FILE, lista_fluxos, CHARACTERISTICS, CLASS)
 		salvar_fluxosKafka(lista_fluxos, CHARACTERISTICS, CLASS, topico, producer)
 
-		
-	
-
-		
-
-
 #Start simple threads
 capture_thread = threading.Thread(target=capture)
 writer_thread = threading.Thread(target=write_flows)
 
 capture_thread.start()
 writer_thread.start()
-
-

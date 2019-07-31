@@ -4,7 +4,7 @@
 
 '''
 
-
+import timeit
 import sys
 import numpy as np
 import json
@@ -31,7 +31,8 @@ def dataPreparing(lines):
 	vectors = virgulas.mapValues(lambda x: np.array(x)) #convertir os values em arrays
 	test = vectors.map(lambda x:x[1]) #take so os values
 	classes = test.map(lambda x:x[numberFeatures-5]) #get the class
-	classes=classes.map(lambda x: '1' if x !='0' else '0') # passing to binary classes
+	classes=classes.map(lambda x: '1' if x != u'"attack"' else '0') # passing to binary classes
+	#classes=classes.map(lambda x: '1' if x != '0' else '0')
 	test = test.map(lambda x:x[0:numberFeatures-5]) #removing the class
 	
 	print 'processing data'	
@@ -43,9 +44,9 @@ def CorrelationFeature(vectors):
 
 	
 	print 'Calculation Correlation'
-	
-	matriz=sc.broadcast(Statistics.corr(vectors, method="pearson"))
 
+	matriz=sc.broadcast(Statistics.corr(vectors, method="pearson"))
+	
 	summary = Statistics.colStats(vectors)
 
 	varianza=summary.variance()
@@ -159,7 +160,8 @@ if __name__ == "__main__":
 	# 	.appName("DecisionTreeClassificationExample")\
 	# 	.getOrCreate()
 
-	
+	timerstart = timeit.default_timer()
+
 	sc = SparkContext(appName="5-tuple Features")
 
 
@@ -173,6 +175,7 @@ if __name__ == "__main__":
 
 
 	reduced=CorrelationFeature(vector) #se precisar de feature do Feature Selection
+#	reduced=vector
 
 	#data=pass2libsvm(vector) 
 
@@ -205,7 +208,7 @@ if __name__ == "__main__":
 	# Evaluate model on test instances and compute test error
 	predictions = model.predict(testData.map(lambda x: x.features))
 
-	#print predictions.take(20)
+	# print predictions.take(20)
 
 	labelsAndPredictions = testData.map(lambda lp: lp.label).zip(predictions)
 
@@ -220,24 +223,27 @@ if __name__ == "__main__":
 
 	#tp=metrics.truePositiveRate(1.0)
 	#fp=metrics.falsePositiveRate(0.0)
-	acuracy = metrics.accuracy
-	precision = metrics.precision()
-	recall = metrics.recall()
-	f1Score = metrics.fMeasure()
+	accuracy = metrics.accuracy
+	precision = metrics.weightedPrecision
+	recall = metrics.weightedRecall
+	f1Score = metrics.weightedFMeasure()
 	confusionMatrix = metrics.confusionMatrix().toArray()
+
+	timerend = timeit.default_timer()
+
 	print("Summary Stats")
 	#print('True Positive Rate = %s' % tp)
 	#print('False Positive Rate = %s' % fp)
-	print('Acuracy = %s' % acuracy)
+	print('Acuracy = %s' % accuracy)
 	print('Test Error = ' + str(testErr))
 	print("Precision = %s" % precision)
 	print("Recall = %s" % recall)
 	print("F1 Score = %s" % f1Score)
 	print("confusionMatrix = %s" % confusionMatrix)
+	print("Time (in seconds) = %s" % (timerend-timerstart))
 
-
-	file='hdfs://master:9000/user/app/Results_'+str(file).split('/app')[1].split('/')[1].split('.csv')[0]
-	sc.parallelize([metrics.accuracy, metrics.precision(), metrics.recall(),metrics.fMeasure(), metrics.confusionMatrix()]).saveAsTextFile(file)
+	#file='hdfs://master:9000/user/app/Results_'+str(file).split('/app')[1].split('/')[1].split('.csv')[0]
+	#sc.parallelize(['Accuracy = ' + str(metrics.accuracy), 'Precision = ' + str(metrics.precision()), 'Recall = ' + str(metrics.recall()), 'f1 = ' + str(metrics.fMeasure()), 'confusionMatrix = ' + str(metrics.confusionMatrix())]).saveAsTextFile(file)
 
 	## comand to get file hdfs dfs -getmerge hdfs://master:9000/user/app/Results_1percent-5tuple-features-sem-smurf/* /tmp/test/file.txt
 

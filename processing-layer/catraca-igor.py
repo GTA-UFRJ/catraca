@@ -1,0 +1,398 @@
+"""
+run the example
+	spark-submit --master spark://master:7077  --jars /opt/spark/jars/elasticsearch-spark-20_2.10-5.5.1.jar,/opt/spark/jars/spark-streaming-kafka-0-8-assembly_2.11-2.1.1.jar --conf spark.executor.extraJavaOptions=" -XX:MaxPermSize=15G "  /tmp/new.py hdfs://master:9000/user/app/reduced-25-with-classes.out 10.10.10.3:2181 topic1
+
+'
+"""
+from __future__ import print_function
+
+import sys
+
+
+from pyspark.mllib.linalg import Vectors
+from pyspark import SparkContext
+from pyspark.streaming import StreamingContext
+from pyspark.streaming.kafka import KafkaUtils, OffsetRange
+import json
+import time
+from geoip import geolite2
+#### ML
+from pyspark.mllib.tree import DecisionTree, DecisionTreeModel
+from pyspark.mllib.util import MLUtils
+####
+from pyspark.ml import Pipeline
+from pyspark.ml.classification import DecisionTreeClassifier
+from pyspark.ml.feature import StringIndexer, VectorIndexer, VectorAssembler
+from pyspark.sql import SparkSession
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType
+####
+
+
+####
+import numpy as np 
+from pyspark.mllib.stat import Statistics
+from pyspark.mllib.regression import LabeledPoint
+from pyspark.mllib.util import MLUtils
+from tempfile import NamedTemporaryFile
+####
+
+from py4j.protocol import Py4JJavaError
+import os
+import subprocess
+
+####for firewall
+import httplib
+import json
+
+
+
+
+numberFeatures=46 #dataset Antonio=25 dataset com=41
+ipFirewall='10.240.114.45'
+#ipES="10.20.20.18"
+ipES="127.0.0.1"
+#31'
+numberClasses=2 #for dataset Antonio (0=Normal, 1=DoS, 2=Probe (3 classes)) #renato 0=Normal 1=Alerta (2 classes)
+
+schema = StructType([
+    StructField("srcip", StringType(), False),              # Feature 1
+    StructField("srcport", IntegerType(), False),           # Feature 2
+    StructField("dstip", StringType(), False),              # Feature 3
+    StructField("dstport", IntegerType(), False),           # Feature 4
+    StructField("proto", IntegerType(), False),             # Feature 5
+    StructField("total_fpackets", IntegerType(), False),    # Feature 6
+    StructField("total_fvolume", IntegerType(), False),     # Feature 7
+    StructField("total_bpackets", IntegerType(), False),    # Feature 8
+    StructField("total_bvolume", IntegerType(), False),     # Feature 9
+    StructField("min_fpktl", IntegerType(), False),         # Feature 10
+    StructField("mean_fpktl", IntegerType(), False),        # Feature 11
+    StructField("max_fpktl", IntegerType(), False),         # Feature 12
+    StructField("std_fpktl", IntegerType(), False),         # Feature 13
+    StructField("min_bpktl", IntegerType(), False),         # Feature 14
+    StructField("mean_bpktl", IntegerType(), False),        # Feature 15
+    StructField("max_bpktl", IntegerType(), False),         # Feature 16
+    StructField("std_bpktl", IntegerType(), False),         # Feature 17
+    StructField("min_fiat", IntegerType(), False),          # Feature 18
+    StructField("mean_fiat", IntegerType(), False),         # Feature 19
+    StructField("max_fiat", IntegerType(), False),          # Feature 20
+    StructField("std_fiat", IntegerType(), False),          # Feature 21
+    StructField("min_biat", IntegerType(), False),          # Feature 22
+    StructField("mean_biat", IntegerType(), False),         # Feature 23
+    StructField("max_biat", IntegerType(), False),          # Feature 24
+    StructField("std_biat", IntegerType(), False),          # Feature 25
+    StructField("duration", IntegerType(), False),          # Feature 26
+    StructField("min_active", IntegerType(), False),        # Feature 27
+    StructField("mean_active", IntegerType(), False),       # Feature 28
+    StructField("max_active", IntegerType(), False),        # Feature 29
+    StructField("std_active", IntegerType(), False),        # Feature 30
+    StructField("min_idle", IntegerType(), False),          # Feature 31
+    StructField("mean_idle", IntegerType(), False),         # Feature 32
+    StructField("max_idle", IntegerType(), False),          # Feature 33
+    StructField("std_idle", IntegerType(), False),          # Feature 34
+    StructField("sflow_fpackets", IntegerType(), False),    # Feature 35
+    StructField("sflow_fbytes", IntegerType(), False),      # Feature 36
+    StructField("sflow_bpackets", IntegerType(), False),    # Feature 37
+    StructField("sflow_bbytes", IntegerType(), False),      # Feature 38
+    StructField("fpsh_cnt", IntegerType(), False),          # Feature 39
+    StructField("bpsh_cnt", IntegerType(), False),          # Feature 40
+    StructField("furg_cnt", IntegerType(), False),          # Feature 41
+    StructField("burg_cnt", IntegerType(), False),          # Feature 42
+    StructField("total_fhlen", IntegerType(), False),       # Feature 43
+    StructField("total_bhlen", IntegerType(), False),       # Feature 44
+    StructField("dscp", IntegerType(), False),              # Feature 45
+    StructField("label", StringType(), False)               # Class Label
+])
+
+
+
+def convertTofloat(x):
+	for i in range(len(x)):
+			x[i]=float(x[i])
+	return x
+
+def convertToString(x):
+	for i in range(len(x)):
+		x[i]=str(x[i])
+	return x
+
+
+def dataPreparing(lines):
+
+	virgulas  = lines.map(lambda x: x.split(',')).map(lambda x:(json.dumps(x[0:4]), x[4:numberFeatures])) #vamos fazer uma tupla ips,todas as caract
+
+	vectors = virgulas.mapValues(lambda x: np.array(x)) #convertir os values em arrays
+	test = vectors.map(lambda x:x[1]) #take so os values
+	classes = test.map(lambda x:x[numberFeatures-5]) #get the class
+	classes=classes.map(lambda x: '1' if x !='0' else '0') # passing to binary classes
+	test = test.map(lambda x:x[0:numberFeatures-5]) #removing the class
+	
+	return test, classes ####ver como llega este test
+
+def CorrelationFeature(vectors):
+
+	
+	matriz=sc.broadcast(Statistics.corr(vectors, method="pearson"))
+
+	summary = Statistics.colStats(vectors)
+
+	varianza=summary.variance()
+
+
+	#########new heuristic diogo proposal
+	w={}
+	aij={}
+	for i in range(len(matriz.value)):
+		w[i]=0
+		aij[i]=0
+		for j in np.nan_to_num(matriz.value[i]):
+			k=abs(j)
+			aij[i]=aij[i]+k
+		w[i]=varianza[i]/aij[i]
+
+	r=sorted([(value,key) for (key,value) in w.items()],reverse=True) #features sorted
+
+	index=[]
+	for i in r:
+		index.append(i[1])
+	
+	index=index[0:6] #tacking the first 6 features
+
+	return index
+
+
+
+def MatrixReducerStream(vectors, index):
+
+	reducedMatrix =[]
+	#####
+	vectors = np.matrix(vectors)
+
+	for k in index:
+		#reducedMatrix.append(matrizRaw[:,k[1]]) #reduced matrix 
+		reducedMatrix.append(vectors[:,k]) #reduced matrix 
+
+	vectors2 = np.column_stack(reducedMatrix)
+	vectors2 = np.array(vectors2)
+	
+	return vectors2
+
+
+def MatrixReducer(vectors,index):
+
+	def takeElement(vector):
+		p=[]
+		for i in index:
+			p.append(vector[i])
+		return p
+	
+	reducedMatrix= vectors.map(lambda x: takeElement(x))
+
+	vectors2=reducedMatrix.map(lambda x: np.column_stack(x))
+
+
+	return vectors2 #matriz reducida
+
+
+def pass2libsvm(vectors2,classes):
+
+	newVector=classes.zip(vectors2)
+	grouped=newVector.groupByKey().mapValues(list)
+	final=newVector.map(lambda x : LabeledPoint(x[0],x[1]))
+
+
+	return final
+
+
+
+def blockFlows(flow):
+	vec = flow[0]
+	prediction = flow[1]
+	if prediction != 0.0:
+		tupla = json.loads(vec)
+		ipSrc=tupla[0]
+		#ipSrc.map(lambda x: str(x)).pprint()
+		#ipDst=vec.map(lambda x: x.split(',')).map(lambda x: x[2])
+		ipDst=tupla[2]
+		conn = httplib.HTTPConnection(ipFirewall,8000)
+		conn.request("POST","/add",json.dumps({'ipSrc':ipSrc, 'ipDst':ipDst}))
+		res=conn.getresponse()
+		res.read()
+	return flow
+
+
+def path_exist(file): 
+	path='hdfs://master:9000/user/app/'
+	try:
+		cmd = ['hdfs', 'dfs', '-find',path]
+		files = subprocess.check_output(cmd).strip().split('\n')
+		if file in files:
+			return True
+		else:
+			return False
+	except Py4JJavaError as e:
+		return False
+		
+
+def getModel(path,file):
+	
+	if path_exist(path+'index-'+file):
+		index=sc.textFile(path+'index-'+file)
+		a=index.collect()
+		b=lambda x : [ int(i) for i in x ]
+		
+		return DecisionTreeModel.load(sc, path+'model-'+file), b(a)
+
+
+	else:
+
+		vector,classes = dataPreparing(sc.textFile(path+file))
+
+		index=CorrelationFeature(vector) #se precisar de feature do Feature Selection
+
+		reduced=MatrixReducer(vector,index) 
+
+		data=pass2libsvm(reduced,classes) 
+
+		# Train a DecisionTree model.
+		#  Empty categoricalFeaturesInfo indicates all features are continuous.
+
+	    # Load CSV data
+		data2 = spark.read.format("csv").schema(schema).load(path+file)
+
+	    # Create vector assembler to produce a feature vector for each record for use in MLlib
+	    # First 45 csv fields are features, the 46th field is the label. Remove IPs from features.
+		assembler = VectorAssembler(inputCols=[schema.names[1]]+schema.names[3:-1], outputCol="features")
+
+	    # Assemble feature vector in new dataframe
+		assembledData = assembler.transform(data2)
+	    
+	    # Create a label and feature indexers to speed up categorical columns for decision tree
+		labelIndexer = StringIndexer(inputCol="label", outputCol="indexedLabel")
+		labelIndexed = labelIndexer.fit(assembledData).transform(assembledData)
+		featureIndexer = VectorIndexer(inputCol="features", outputCol="indexedFeatures", maxCategories=20)
+		featureIndexed = featureIndexer.fit(labelIndexed).transform(labelIndexed)
+
+	    # Create a DecisionTree model trainer
+		dt = DecisionTreeClassifier(labelCol="indexedLabel", featuresCol="indexedFeatures")
+	    
+	    # Chain indexers and model training in a Pipeline
+#		pipeline = Pipeline(stages=[labelIndexer, featureIndexer, dt])
+
+	    # Train model
+#		model = pipeline.fit(assembledData)
+		model = dt.fit(featureIndexed)
+
+		#model = DecisionTree.trainClassifier(data, numberClasses,{})	 #, maxDepth=5, maxBins=32)
+
+		#model.save(sc, path+'model-'+file)			
+
+		return	model, index
+
+def addLocation(x):
+	from geoip import geolite2 #
+ 	dictX = dict(x)
+ 	locSrcIp = geolite2.lookup(dictX['srcip'])
+ 	locDstIp = geolite2.lookup(dictX['dstip'])
+	
+ 	try:
+
+ 		if locSrcIp and locSrcIp.location:
+
+ 			dictX['srclocation']= {'lat': locSrcIp.location[0], 'lon':locSrcIp.location[1]}
+ 		else:
+ 			dictX['srclocation']= {'lat': 48, 'lon':22}
+
+
+ 		if locDstIp and locDstIp.location:
+ 			dictX['dstlocation']= {'lat': locSrcIp.location[0], 'lon':locSrcIp.location[1]}
+ 		else:
+ 			dictX['dstlocation']= {'lat': 48, 'lon':22}
+ 	except AttributeError:
+
+ 		pass
+ 	except TypeError:
+ 		pass
+	
+ 	return dictX
+
+
+if __name__ == "__main__":
+	if len(sys.argv) != 4:
+		print("Usage: kafka_wordcount.py <file> <hdfs-files> <zk> <topic> ", file=sys.stderr)
+		exit(-1)
+
+	sc = SparkContext(appName="Kafka with DT")
+	sc.setLogLevel("ERROR")
+
+	spark = SparkSession(sc)
+	
+	#Create model
+	a=0
+	orig=sys.argv[1]
+	path='hdfs://master:9000/user/app/'
+	file=orig.split('app/')[1]
+	features=sc.textFile(path+'features-des.txt').collect()
+	feat=[]
+	for i in features:
+	    	#feat.append(i.split('-')[0].split(' ')[0])
+		feat.append(i.split(',')[1])
+
+
+
+	[model,index]=getModel(path,file)
+	
+	if path_exist(path+'index-'+file) == False: #hdfs://master:9000/user/app/index-25-reduced.txt') == False:
+		rdd=sc.parallelize(index)
+		rdd.saveAsTextFile(path+'index-'+file)#'hdfs://master:9000/user/app/index-25-reduced.txt')
+
+	####Streaming
+	
+	ssc = StreamingContext(sc, 1)
+
+
+	###kafka
+	zkQuorum, topic = sys.argv[2:]
+
+	kvs = KafkaUtils.createDirectStream(ssc, [topic], {"metadata.broker.list": zkQuorum})
+	parsed = kvs.map(lambda v: json.loads(v[1]))
+
+	lines  = parsed.map(lambda x: x.split(',')).map(lambda x:(json.dumps(x[0:4]), x[4:numberFeatures-1])).mapValues(lambda x: convertTofloat(x))
+ 	elastic=parsed.map(lambda x: x.split(',')).map(lambda x: {feat[i]: x[i] for i in range(numberFeatures-2)}).map(addLocation) #get the whole verctor
+
+
+ 	test = lines.flatMapValues(lambda x: MatrixReducerStream(x,index))
+
+	conf = {"es.resource" : "spark/test", "es.nodes" : ipES, "es.index.auto.create": "true"}
+		   
+	vec = test.mapValues( Vectors.dense) #now we have the vectors with the format of the ML
+
+	test.foreachRDD(lambda x: model.transform(spark.read.format("csv").schema(schema).load(x)))
+
+	try:	
+		vec=test.map(lambda x: x[1])
+		ips=test.transform(lambda x: x.keys().zipWithIndex()).map(lambda x: (x[1],x[0]))
+		algo=test.transform(lambda x: model.predict(x.values()).zipWithIndex()).map(lambda x: (x[1],x[0]))
+
+		joined = ips.join(algo).transform(lambda x: x.values())
+		joined.foreachRDD(lambda v: print(v.collect()))
+		#joined.map(blockFlows).pprint()
+		yyy=elastic.transform(lambda x: x.zipWithIndex()).map(lambda x: (x[1],x[0]))
+		toElastic = yyy.join(algo).transform(lambda x: x.values())
+		
+		almostSend=toElastic.map(lambda x: dict([i for i in x[0].items()+[('predict',x[1]),('timestamp',int(time.time()*1000))]]))
+		
+		now=almostSend.map(lambda x: ('key',x))
+		now.foreachRDD(lambda v: print(v.collect()))
+		
+		now.foreachRDD(lambda x: x.saveAsNewAPIHadoopFile(path='-',outputFormatClass="org.elasticsearch.hadoop.mr.EsOutputFormat",keyClass="org.apache.hadoop.io.NullWritable",valueClass="org.elasticsearch.hadoop.mr.LinkedMapWritable",conf=conf))
+	except AttributeError:
+		pass
+
+	ssc.start()
+	ssc.awaitTermination()
+
+
+
+
+
+
